@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script type="text/javascript" src="js/jsdiff_edit.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link type="text/css" rel="stylesheet" href="css/materialize.min.css" media="screen,projection" />
+  <link type="text/css" rel="stylesheet" href="css/main.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <p>Click the button to join the strings into one new string.</p>
+    <div class="form">
+      <form class="col s12">
+        <div class="row">
+          <div class="input-field col s12">
+            <input placeholder="Placeholder" id="inputStr0" type="text" class="validate" onfocusout="focusOutFunction()">
+            <label for="inputStr0">Text 1</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            <input placeholder="Placeholder" id="inputStr1" type="text" class="validate" onfocusout="focusOutFunction()">
+            <label for="inputStr1">Text 2</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            <input placeholder="Placeholder" id="inputStr2" type="text" class="validate" onfocusout="focusOutFunction()">
+            <label for="inputStr2">Text 3</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            <input placeholder="Placeholder" id="inputStr3" type="text" class="validate" onfocusout="focusOutFunction()">
+            <label for="inputStr3">Text 4</label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s11">
+            <input value="some texts here" id="outputStr" type="text" class="validate" onfocusout="focusOutFunction()">
+            <a class="waves-effect waves-yellow copy-button" data-clipboard-action="copy" data-clipboard-target="#outputStr">
+            <i class="material-icons left">content_copy</i>copy</a>
+            <label for="outputStr">Output</label>
+          </div>
+        </div>
+      </form>
+    </div>
+    <br>
+    <div>
+      <a class="waves-effect waves-light btn indigo" onclick="triggerConvertNow()">
+          <i class="material-icons left">compare_arrows</i>Merge :)</a>
+
+      <a class="waves-effect waves-teal btn-flat" onclick="triggerLoadDefaultData()">
+          <i class="material-icons left">code</i>default</a>
+    </div>
+
+  </div>
+
+  <!--Import jQuery before materialize.js-->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script type="text/javascript" src="js/materialize.min.js"></script>
+
+  <script>
+  var str = [];
+  var numStrings = 0;
+
+    //* ========================
+    //* Our Key Stars
+    //* ========================
+
+    var key = ["120x600","160x600","300x250","break-728x90"]
+    var symbol = [" ◘ "," º "," ☼ "," § "]
+
+    //* ========================
+    //* Convert (Click)
+    //* ========================
+    function triggerConvertNow() {
+
+      for (i = 0; i< 4; i++){
+        str[i] = document.getElementById("inputStr" + i).value;
+
+        str[i] = doubleQuote(str[i]);      // convert double Quote, to prevent code broken
+        str[i] = removeSymb(str[i]);       // remove photoshop symbols
+        str[i] = reverseSymbol(str[i]);    // convert to symbols
+      }
+
+      var mergedString = merge();
+      var final = convertGoogleDoc(mergedString);
+
+      document.getElementById("outputStr").value = final;
+    }
+
+    //* ========================
+    //* Convert Tags-to-Symbol (stage2)
+    //* ========================
+    function reverseSymbol(s) {
+      // console.log(s)
+      var one1 = s.replace(/<br class='break-120x600'>/g, " ◘ ");
+      var one2 = one1.replace(/<br class='break-160x600'>/g, " º ");
+      var one3 = one2.replace(/<br class='break-300x250'>/g, " ☼ ");
+      var one4 = one3.replace(/<br class='break-728x90'>/g, " § ");
+      return one4;
+
+    }
+
+    //* ========================
+    //* Merging without repeat
+    //* ========================
+    function merge() {
+      var compare1 = diffString(str[0], str[1]);
+      var compare2 = diffString(compare1, str[2]);
+      var compare3 = diffString(compare2, str[3]);
+      var merged = removeDbSp(compare3);
+      return merged;
+    }
+
+    //* ========================
+    //* Individual treatment
+    //* ========================
+    function removeDbSp(s) {
+      var removed = s.replace(/  /g, " ");
+      return removed;
+    }
+
+    function removeSymb(s) {
+      var removed = s.replace(//g, ""); //This is not an error, but removing a nasty hidden symbol
+      return removed;
+    }
+    //(stage2)
+    function doubleQuote(s){
+      var singleQuote = s.replace(/"break-120x600"/g, "'break-120x600'");
+      singleQuote = singleQuote.replace(/"break-160x600"/g, "'break-160x600'");
+      singleQuote = singleQuote.replace(/"break-300x250"/g, "'break-300x250'");
+      singleQuote = singleQuote.replace(/"break-728x90"/g, "'break-728x90'");
+      return singleQuote;
+    }
+
+    //* ========================
+    //* Convert Symbol-to-tags
+    //* ========================
+
+    //static for now, change to array for flexibility
+    function convertGoogleDoc(ori_String) {
+      var s = ori_String;
+      //chop out header "<br class='", tail "'>"
+      var one1 = s.replace(/◘/g, "<br class='break-120x600'>");
+      var one2 = one1.replace(/º/g, "<br class='break-160x600'>");
+      var one3 = one2.replace(/☼/g, "<br class='break-300x250'>");
+      var one4 = one3.replace(/§/g, "<br class='break-728x90'>");
+      var one = one4.replace(/  /g, " ");
+      var brMerge = one.replace(/'> <br class='/gi, " ");
+      brMerge = removeDbSp(brMerge);
+      // console.log("convertGoogleDoc : "+ brMerge)
+      return brMerge;
+    }
+
+    //* ========================
+    //* Default Texts for Test (Click)
+    //* ========================
+
+    function triggerLoadDefaultData() {
+      var defaultTexts = [
+        "Get iPhone SE <br class='break-120x600'>at our lowest <br class='break-120x600'>ever price",
+        "Get iPhone SE <br class='break-160x600'>at our lowest <br class='break-160x600'>ever price",
+        "Get iPhone SE at our <br class='break-300x250'>lowest ever price",
+        "Get iPhone SE at our <br class='break-728x90'>lowest ever price"
+      ];
+
+      // loading default sentences into input text for test. "Auto-fill" to save time
+      for (i = 0; i< 4; i++){
+        document.getElementById("inputStr" + i).value = defaultTexts[i];
+      }
+    }
+
+    //* ========================
+    //* others
+    //* ========================
+    function focusOutFunction() {
+      console.log("focus out")
+    }
+
+    var clipboard = new Clipboard('.copy-button');
+    clipboard.on('success', function(e) {
+      Materialize.toast('copied!', 2000, 'rounded')
+    });
+
+    clipboard.on('error', function(e) {
+      Materialize.toast('error copying', 3000, 'rounded')
+    });
+    // var clipboard = new Clipboard('.copy-button', {
+    //     target: function() {
+    //         return document.querySelector('#outputStr');
+    //     }
+    // });
+
+  </script>
+
+</body>
+</html>
+<!--  problem right now is that the copy and paste function removes the texts (solved)-->
